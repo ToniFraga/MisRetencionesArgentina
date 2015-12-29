@@ -1,0 +1,149 @@
+Sub MisRetenciones()
+
+'Esto es una macro en Visual Basic para Excel. Cuando uno exporta a Excel las retenciones de la página de AFIP (https://seti.afip.gob.ar/misret/consultaMisRetenciones.do?method=getForm) el archivo resultante es desordenado. Esta macro lo hace más amigable.
+
+'Para ahorrar tiempo y capacidad de procesamiento desactivo la actualización de pantalla.
+Application.ScreenUpdating = False
+
+'El separador decimal en el reporte de AFIP es el punto
+Application.DecimalSeparator = "."
+
+'Establezco la cantidad de filas que tiene el reporte
+Range("A1").Select
+ActiveCell.Offset(1, 0).Range("A1").Select
+Range(Selection, ActiveCell.SpecialCells(xlLastCell)).Select
+Dim CantidadFilas As Long
+CantidadFilas = Selection.Rows.Count
+
+'Elimino las columnas que no me interesan y reacomodo las que me interesan
+Range("C1").Select
+ActiveCell.Range("A1:D" & CantidadFilas + 1).Select
+Selection.Delete Shift:=xlToLeft
+ActiveCell.Offset(0, 4).Range("A1:D" & CantidadFilas + 1).Select
+Selection.Delete Shift:=xlToLeft
+Range("E1").Select
+Range(Selection, Selection.End(xlDown)).Select
+Selection.Cut
+Range("A1").Select
+Selection.Insert Shift:=xlToRight
+Range("D1").Select
+Range(Selection, Selection.End(xlDown)).Select
+Selection.Cut
+Range("B1").Select
+Selection.Insert Shift:=xlToRight
+
+'Armo las columnas Fecha, CUIT, Denominación, Punto, Número, Importe
+Range("A1").Select
+Selection.End(xlToRight).Select
+ActiveCell.Offset(0, 1).Range("A1").Select
+ActiveCell.FormulaR1C1 = "Fecha"
+ActiveCell.Offset(0, 1).Range("A1").Select
+ActiveCell.FormulaR1C1 = "CUIT"
+ActiveCell.Offset(0, 1).Range("A1").Select
+ActiveCell.FormulaR1C1 = "Denominación"
+ActiveCell.Offset(0, 1).Range("A1").Select
+ActiveCell.FormulaR1C1 = "Punto"
+ActiveCell.Offset(0, 1).Range("A1").Select
+ActiveCell.FormulaR1C1 = "Número"
+ActiveCell.Offset(0, 1).Range("A1").Select
+ActiveCell.FormulaR1C1 = "Importe"
+'Con sus respectivas fórmulas
+ActiveCell.Offset(1, -5).Range("A1").Select
+ActiveCell.FormulaR1C1 = "=RC[-5]*1"
+ActiveCell.Offset(0, 1).Range("A1").Select
+ActiveCell.FormulaR1C1 = "=RC[-5]*1"
+ActiveCell.Offset(0, 1).Range("A1").Select
+ActiveCell.FormulaR1C1 = "=RC[-5]"
+ActiveCell.Offset(0, 1).Range("A1").Select
+ActiveCell.FormulaR1C1 = "=LEFT(RC[-5],4)*1"
+ActiveCell.Offset(0, 1).Range("A1").Select
+ActiveCell.FormulaR1C1 = "=RIGHT(RC[-6],6)*1"
+ActiveCell.Offset(0, 1).Range("A1").Select
+ActiveCell.FormulaR1C1 = "=IF(LEFT(RC[-11],1)=""R"",RC[-6]*-1,RC[-6]*1)"
+'Y pego las fórmulas para todas las filas de la tabla
+Range("G1").Select
+ActiveCell.Offset(1, 0).Range("A1").Select
+Range(Selection, Selection.End(xlToRight)).Select
+Selection.Copy
+ActiveCell.Range("A1:F" & CantidadFilas).Select
+ActiveSheet.Paste
+Application.CutCopyMode = False
+Selection.Copy
+Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+    :=False, Transpose:=False
+
+'Cambio el separador decimal a la coma
+Application.DecimalSeparator = ","
+
+'Elimino las columnas que usé como referencia
+Range("B1").Select
+ActiveCell.Range("A1:E" & CantidadFilas + 1).Select
+Application.CutCopyMode = False
+Selection.Delete Shift:=xlToLeft
+Range("A1").Select
+ActiveCell.FormulaR1C1 = "Tipo"
+
+'Lo que sigue es para que la presentación de los datos sea más prolija
+Range("A2:A" & CantidadFilas + 1).Select
+With Selection.Font
+    .Name = "Baskerville Old Face"
+    .Size = 11
+End With
+Range("B2:B" & CantidadFilas + 1).Select
+With Selection.Font
+    .Name = "Arno Pro Caption"
+    .Size = 11
+End With
+Selection.NumberFormat = "dd/mm/yy"
+Range("C2:C" & CantidadFilas + 1).Select
+With Selection.Font
+    .Name = "Arno Pro Caption"
+    .Size = 11
+End With
+Selection.NumberFormat = "##-########-#"
+Range("D2:D" & CantidadFilas + 1).Select
+With Selection.Font
+    .Name = "Baskerville Old Face"
+    .Size = 11
+End With
+Range("E2:E" & CantidadFilas + 1).Select
+With Selection.Font
+    .Name = "Arno Pro Caption"
+    .Size = 11
+End With
+Selection.NumberFormat = "0000-"
+Range("F2:F" & CantidadFilas + 1).Select
+With Selection.Font
+    .Name = "Arno Pro Caption"
+    .Size = 11
+End With
+Selection.NumberFormat = "00000000"
+Range("G2:G" & CantidadFilas + 1).Select
+With Selection.Font
+    .Name = "Arno Pro Caption"
+    .Size = 11
+    .Strikethrough = False
+End With
+Selection.NumberFormat = "#,##0.00_ ;[Red]-#,##0.00 "
+Range("A1:G1").Select
+Selection.Font.Underline = xlUnderlineStyleSingle
+With Selection.Font
+    .Name = "Baskerville Old Face"
+    .Size = 12
+End With
+Cells.Select
+With Selection.Interior
+    .Pattern = xlSolid
+    .PatternColorIndex = xlAutomatic
+    .ThemeColor = xlThemeColorDark1
+    .TintAndShade = 0
+    .PatternTintAndShade = 0
+End With
+Range("A1").Select
+ActiveCell.Columns("A:G").EntireColumn.Select
+ActiveCell.Columns("A:G").EntireColumn.EntireColumn.AutoFit
+Range("A1").Select
+
+'Vuelvo a activar la actualización de pantalla.
+Application.ScreenUpdating = True
+End Sub
